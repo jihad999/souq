@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Cart;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
+class CartService
+{
+    public function getCurrentCart(): Cart
+    {
+        if (Auth::check()) {
+            return Cart::firstOrCreate(['user_id' => Auth::id()]);
+        }
+
+        $sessionId = session()->get('cart_session_id');
+
+        if (! $sessionId) {
+            $sessionId = Str::uuid();
+            session()->put('cart_session_id', $sessionId);
+        }
+
+        return Cart::firstOrCreate(['session_id' => $sessionId]);
+    }
+
+    public function addProduct(Product $product, int $quantity = 1): void
+    {
+        $cart = $this->getCurrentCart();
+
+        $item = $cart->items()->where('product_id', $product->id)->first();
+
+        if ($item) {
+            $item->increment('quantity', $quantity);
+        } else {
+            $cart->items()->create([
+                'product_id' => $product->id,
+                'quantity' => $quantity,
+            ]);
+        }
+    }
+
+    public function updateQuantity(int $cartItemId, int $quantity): void
+    {
+        $cart = $this->getCurrentCart();
+        $item = $cart->items()->findOrFail($cartItemId);
+
+        if ($quantity <= 0) {
+            $item->delete();
+            return;
+        }
+
+        $item->update(['quantity' => $quantity]);
+    }
+
+    public function removeItem(int $cartItemId): void
+    {
+        $cart = $this->getCurrentCart();
+        $cart->items()->findOrFail($cartItemId)->delete();
+    }
+
+    public function getItemsCount(): int
+    {
+        return $this->getCurrentCart()->items()->sum('quantity');
+    }
+}
