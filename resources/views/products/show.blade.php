@@ -51,15 +51,83 @@
                 @endif
             </p>
 
-            <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex gap-4">
-                @csrf
-                <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}"
-                       class="w-20 border rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-accent focus:outline-none">
-                <button type="submit" {{ $product->stock <= 0 ? 'disabled' : '' }}
-                        class="flex-1 bg-accent hover:bg-accent-dark disabled:bg-gray-300 text-white font-semibold py-3 rounded-lg transition">
-                    أضف للسلة
-                </button>
-            </form>
+            @if($product->stock > 0)
+                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex gap-4">
+                    @csrf
+                    <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}"
+                        class="w-20 border rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-accent focus:outline-none">
+                    <button type="submit"
+                            class="cursor-pointer flex-1 bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition">
+                        أضف للسلة
+                    </button>
+                </form>
+            @else
+                <div x-data="{
+                        email: '',
+                        quantity: 1,
+                        submitted: false,
+                        loading: false,
+                        error: '',
+                        async submit() {
+                            this.loading = true;
+                            this.error = '';
+                            try {
+                                const response = await fetch('{{ route('stock-notifications.store') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                    },
+                                    body: JSON.stringify({
+                                        product_id: {{ $product->id }},
+                                        email: this.email,
+                                        quantity: this.quantity,
+                                    }),
+                                });
+                                const data = await response.json();
+                                if (data.success) {
+                                    this.submitted = true;
+                                } else {
+                                    this.error = data.message || 'حدث خطأ، حاول مرة أخرى.';
+                                }
+                            } catch (e) {
+                                this.error = 'حدث خطأ، حاول مرة أخرى.';
+                            }
+                            this.loading = false;
+                        }
+                    }" class="bg-gray-50 border border-gray-200 rounded-xl p-5">
+
+                    <template x-if="!submitted">
+                        <div>
+                            <p class="text-sm font-medium text-primary mb-3">
+                                هذا المنتج غير متوفر حاليًا. سجّل بريدك والكمية المطلوبة ونبلغك فور توفره.
+                            </p>
+                            <div class="flex gap-2">
+                                <input type="number" x-model="quantity" min="1" max="100"
+                                    class="w-20 border rounded-lg px-3 py-2 text-sm text-center focus:ring-2 focus:ring-accent focus:outline-none">
+                                <input type="email" x-model="email" placeholder="بريدك الإلكتروني"
+                                    class="flex-1 border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+                                <button @click="submit()" :disabled="loading || !email"
+                                        class="cursor-pointer bg-primary hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 rounded-lg transition">
+                                    <span x-show="!loading">نبهني</span>
+                                    <span x-show="loading">جاري الإرسال...</span>
+                                </button>
+                            </div>
+                            <p x-show="error" x-text="error" class="text-sale text-xs mt-2"></p>
+                        </div>
+                    </template>
+
+                    <template x-if="submitted">
+                        <p class="text-success text-sm font-medium flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            تم تسجيل طلبك بنجاح، رح نبلغك فور توفر المنتج.
+                        </p>
+                    </template>
+                </div>
+            @endif
         </div>
     </div>
 

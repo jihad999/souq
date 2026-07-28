@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -11,19 +12,16 @@ class ProductController extends Controller
     {
         $query = Product::query()->where('is_active', true);
 
-        // فلتر الفئة
         if ($request->filled('category')) {
             $query->whereHas('category', function ($q) use ($request) {
                 $q->where('slug', $request->category);
             });
         }
 
-        // فلتر الاسم (بحث)
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        // فلتر السعر
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -31,7 +29,6 @@ class ProductController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // الترتيب
         $sort = $request->get('sort', 'latest');
         match ($sort) {
             'price_asc' => $query->orderBy('price', 'asc'),
@@ -41,6 +38,10 @@ class ProductController extends Controller
 
         $products = $query->paginate(12)->withQueryString();
         $categories = Category::where('is_active', true)->get();
+
+        if ($request->ajax()) {
+            return view('products.partials.product-grid', compact('products'))->render();
+        }
 
         return view('products.index', compact('products', 'categories'));
     }

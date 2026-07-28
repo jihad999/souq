@@ -67,7 +67,7 @@
                     @error('message') <p class="text-sale text-sm mt-1">{{ $message }}</p> @enderror
                 </div>
                 <button type="submit"
-                        class="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition">
+                        class="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition cursor-pointer">
                     إرسال الرسالة
                 </button>
             </form>

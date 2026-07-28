@@ -64,4 +64,24 @@ class CartService
     {
         return $this->getCurrentCart()->items()->sum('quantity');
     }
+
+    public function getCartItems()
+    {
+        return $this->getCurrentCart()->items()->with('product')->get();
+    }
+
+    public function hasProduct(int $productId): bool
+    {
+        return $this->getCurrentCart()->items()->where('product_id', $productId)->exists();
+    }
+
+    public function getSubtotal(): float
+    {
+        return $this->getCurrentCart()->subtotal;
+    }
+
+    public function clearCart(): void
+    {
+        $this->getCurrentCart()->items()->delete();
+    }
 }

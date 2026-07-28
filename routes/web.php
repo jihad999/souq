@@ -10,6 +10,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\PartnerController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StockNotificationController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
@@ -25,8 +26,10 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
 Route::patch('/cart/update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/remove/{cartItem}', [CartController::class, 'remove'])->name('cart.remove');
+Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 Route::post('/cart/apply-promo', [CartController::class, 'applyPromo'])->name('cart.apply-promo');
 Route::post('/cart/remove-promo', [CartController::class, 'removePromo'])->name('cart.remove-promo');
+Route::post('/stock-notifications', [StockNotificationController::class, 'store'])->name('stock-notifications.store');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

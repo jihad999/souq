@@ -43,12 +43,12 @@ class CartController extends Controller
         ]);
 
         if ($product->stock <= 0) {
-            return back()->with('error', 'هذا المنتج غير متوفر حاليًا.');
+            return $this->respond($request, false, 'هذا المنتج غير متوفر حاليًا.');
         }
 
         $this->cartService->addProduct($product, $request->get('quantity', 1));
 
-        return back()->with('success', 'تمت إضافة المنتج للسلة.');
+        return $this->respond($request, true, 'تمت إضافة المنتج للسلة.');
     }
 
     public function update(Request $request, CartItem $cartItem)
@@ -57,14 +57,14 @@ class CartController extends Controller
 
         $this->cartService->updateQuantity($cartItem->id, $request->quantity);
 
-        return back()->with('success', 'تم تحديث السلة.');
+        return $this->respond($request, true, 'تم تحديث السلة.');
     }
 
-    public function remove(CartItem $cartItem)
+    public function remove(Request $request, CartItem $cartItem)
     {
         $this->cartService->removeItem($cartItem->id);
 
-        return back()->with('success', 'تم حذف المنتج من السلة.');
+        return $this->respond($request, true, 'تم حذف المنتج من السلة.');
     }
 
     public function applyPromo(Request $request)
@@ -75,18 +75,54 @@ class CartController extends Controller
         $cart = $this->cartService->getCurrentCart();
 
         if (! $promoCode || ! $promoCode->isValid($cart->subtotal)) {
-            return back()->with('error', 'كود الخصم غير صالح أو منتهي الصلاحية.');
+            return $this->respond($request, false, 'كود الخصم غير صالح أو منتهي الصلاحية.');
         }
 
         session()->put('promo_code_id', $promoCode->id);
 
-        return back()->with('success', 'تم تفعيل كود الخصم بنجاح.');
+        return $this->respond($request, true, 'تم تفعيل كود الخصم بنجاح.');
     }
 
-    public function removePromo()
+    public function removePromo(Request $request)
     {
         session()->forget('promo_code_id');
 
-        return back()->with('success', 'تم إلغاء كود الخصم.');
+        return $this->respond($request, true, 'تم إلغاء كود الخصم.');
+    }
+
+    /**
+     * يرجع JSON لو الطلب AJAX، أو redirect عادي لو fallback بدون JS
+     */
+    private function respond(Request $request, bool $success, string $message)
+    {
+        if ($request->wantsJson() || $request->ajax()) {
+            $cart = $this->cartService->getCurrentCart();
+            $cart->load('items.product');
+
+            return response()->json([
+                'success' => $success,
+                'message' => $message,
+                'cartItemsCount' => $this->cartService->getItemsCount(),
+                'cartSubtotal' => (float) $cart->subtotal,
+                'cartItems' => $cart->items->map(fn ($item) => [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'name' => $item->product->name,
+                    'image' => $item->product->main_image ? asset('storage/' . $item->product->main_image) : null,
+                    'quantity' => (int) $item->quantity,
+                    'price' => (float) $item->product->final_price,
+                    'lineTotal' => (float) ($item->product->final_price * $item->quantity),
+                ]),
+            ]);
+        }
+
+        return back()->with($success ? 'success' : 'error', $message);
+    }
+
+    public function clear(Request $request)
+    {
+        $this->cartService->clearCart();
+
+        return $this->respond($request, true, 'تم إفراغ السلة بنجاح.');
     }
 }

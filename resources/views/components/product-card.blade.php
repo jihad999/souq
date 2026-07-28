@@ -3,15 +3,21 @@
         <div class="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
             @if($product->main_image)
                 <img src="{{ asset('storage/' . $product->main_image) }}"
-                     class="w-full h-full object-cover group-hover:scale-105 transition">
+                     class="w-full h-full object-cover group-hover:scale-105 transition {{ $product->stock <= 0 ? 'opacity-50 grayscale' : '' }}">
             @else
                 <span class="text-gray-400">لا توجد صورة</span>
             @endif
         </div>
 
-        @if($product->hasActiveSale())
+        @if($product->hasActiveSale() && $product->stock > 0)
             <span class="absolute top-2 right-2 bg-sale text-white text-xs font-bold px-2 py-1 rounded">
                 خصم
+            </span>
+        @endif
+
+        @if($product->stock <= 0)
+            <span class="absolute top-2 right-2 bg-gray-700 text-white text-xs font-bold px-2 py-1 rounded">
+                نفدت الكمية
             </span>
         @endif
     </a>
@@ -30,12 +36,32 @@
             @endif
         </div>
 
-        <form action="{{ route('cart.add', $product->id) }}" method="POST">
-            @csrf
-            <button type="submit"
-                    class="w-full bg-primary hover:bg-accent text-white text-sm font-medium py-2 rounded-lg transition">
-                أضف للسلة
+        @if($product->stock <= 0)
+            <button type="button" disabled
+                    class="w-full bg-gray-100 text-gray-400 text-sm font-medium py-2 rounded-lg cursor-not-allowed">
+                نفدت الكمية
             </button>
-        </form>
+        @else
+            <button
+                x-data
+                @click="$store.cart.add({{ $product->id }})"
+                :disabled="$store.cart.items.some(i => i.product_id === {{ $product->id }}) || $store.cart.loading"
+                :class="$store.cart.items.some(i => i.product_id === {{ $product->id }})
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-primary hover:bg-accent text-white cursor-pointer'"
+                class="w-full text-sm font-medium py-2 rounded-lg transition flex items-center justify-center gap-1">
+                <template x-if="$store.cart.items.some(i => i.product_id === {{ $product->id }})">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        مضاف للسلة
+                    </span>
+                </template>
+                <template x-if="!$store.cart.items.some(i => i.product_id === {{ $product->id }})">
+                    <span>أضف للسلة</span>
+                </template>
+            </button>
+        @endif
     </div>
 </div>

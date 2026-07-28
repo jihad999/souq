@@ -55,13 +55,13 @@
 
             @if($partners->count() > 4)
             <button @click="prev()"
-                    class="absolute top-1/2 -translate-y-1/2 right-2 md:right-0 md:translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10">
+                    class="absolute top-1/2 -translate-y-1/2 right-2 md:right-0 md:translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
             </button>
             <button @click="next()"
-                    class="absolute top-1/2 -translate-y-1/2 left-2 md:left-0 md:-translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10">
+                    class="absolute top-1/2 -translate-y-1/2 left-2 md:left-0 md:-translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
@@ -71,7 +71,7 @@
             <div class="flex justify-center gap-2 mt-8">
                 <template x-for="page in pages">
                     <button @click="current = page - 1"
-                            class="w-2 h-2 rounded-full transition"
+                            class="w-2 h-2 rounded-full transition cursor-pointer"
                             :class="current === page - 1 ? 'bg-accent w-6' : 'bg-gray-300'">
                     </button>
                 </template>
@@ -123,13 +123,13 @@
 
             @if($clientLogos->count() > 4)
             <button @click="prev()"
-                    class="absolute top-1/2 -translate-y-1/2 right-2 md:right-0 md:translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10">
+                    class="absolute top-1/2 -translate-y-1/2 right-2 md:right-0 md:translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
             </button>
             <button @click="next()"
-                    class="absolute top-1/2 -translate-y-1/2 left-2 md:left-0 md:-translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10">
+                    class="absolute top-1/2 -translate-y-1/2 left-2 md:left-0 md:-translate-x-1/2 bg-white shadow-lg rounded-full w-11 h-11 flex items-center justify-center text-primary hover:bg-accent hover:text-white transition z-10 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
@@ -138,7 +138,7 @@
             <div class="flex justify-center gap-2 mt-8">
                 <template x-for="page in pages">
                     <button @click="current = page - 1"
-                            class="w-2 h-2 rounded-full transition"
+                            class="w-2 h-2 rounded-full transition cursor-pointer"
                             :class="current === page - 1 ? 'bg-accent w-6' : 'bg-gray-300'">
                     </button>
                 </template>
@@ -197,7 +197,7 @@
                 <textarea name="message" rows="4"
                           class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent focus:outline-none">{{ old('message') }}</textarea>
             </div>
-            <button type="submit" class="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition">
+            <button type="submit" class="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition cursor-pointer">
                 إرسال طلب الشراكة
             </button>
         </form>
