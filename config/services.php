@@ -35,4 +35,21 @@ return [
         ],
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+    ],
+
+    'paytabs' => [
+        'profile_id' => env('PAYTABS_PROFILE_ID'),
+        'server_key' => env('PAYTABS_SERVER_KEY'),
+        'region' => env('PAYTABS_REGION', 'ARE'),
+    ],
+
+    'hyperpay' => [
+        'access_token' => env('HYPERPAY_ACCESS_TOKEN'),
+        'entity_id' => env('HYPERPAY_ENTITY_ID'),
+        'mode' => env('HYPERPAY_MODE', 'test'),
+    ],
+
 ];

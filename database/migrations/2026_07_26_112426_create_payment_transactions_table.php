@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payment_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
-            $table->string('gateway'); // paypal, stripe, paytabs, hyperpay, cod
+            $table->string('gateway'); // stripe, paytabs, hyperpay, cod
             $table->string('transaction_id')->nullable(); // رقم العملية من البوابة
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['pending', 'success', 'failed', 'refunded', 'partially_refunded'])->default('pending');

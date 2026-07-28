@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockNotificationController;
 
@@ -30,6 +32,12 @@ Route::delete('/cart/clear', [CartController::class, 'clear'])->name('cart.clear
 Route::post('/cart/apply-promo', [CartController::class, 'applyPromo'])->name('cart.apply-promo');
 Route::post('/cart/remove-promo', [CartController::class, 'removePromo'])->name('cart.remove-promo');
 Route::post('/stock-notifications', [StockNotificationController::class, 'store'])->name('stock-notifications.store');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/checkout/success/{order:order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/payment/{order:order_number}', [PaymentController::class, 'process'])->name('payment.process');
+Route::get('/payment/{order:order_number}/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+Route::get('/payment/{order:order_number}/hyperpay-widget', [PaymentController::class, 'hyperPayWidget'])->name('payment.hyperpay.widget');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

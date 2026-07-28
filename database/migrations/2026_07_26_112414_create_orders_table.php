@@ -29,7 +29,7 @@ return new class extends Migration
             $table->decimal('total', 10, 2);
 
             // الدفع
-            $table->enum('payment_method', ['paypal', 'stripe', 'paytabs', 'hyperpay', 'cod']);
+            $table->enum('payment_method', ['stripe', 'paytabs', 'hyperpay', 'cod']);
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded', 'partially_refunded'])->default('pending');
 
             // حالة الطلب
