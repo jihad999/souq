@@ -36,8 +36,7 @@ Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.in
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 Route::get('/checkout/success/{order:order_number}', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/payment/{order:order_number}', [PaymentController::class, 'process'])->name('payment.process');
-Route::get('/payment/{order:order_number}/callback', [PaymentController::class, 'callback'])->name('payment.callback');
-Route::get('/payment/{order:order_number}/hyperpay-widget', [PaymentController::class, 'hyperPayWidget'])->name('payment.hyperpay.widget');
+Route::match(['get', 'post'], '/payment/{order:order_number}/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

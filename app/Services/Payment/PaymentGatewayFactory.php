@@ -12,7 +12,6 @@ class PaymentGatewayFactory
             'cod' => new CodGateway(),
             'stripe' => new StripeGateway(),
             'paytabs' => new PayTabsGateway(),
-            'hyperpay' => new HyperPayGateway(),
             default => throw new InvalidArgumentException("Unsupported payment gateway: {$gateway}"),
         };
     }

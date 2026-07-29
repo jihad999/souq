@@ -12,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        DB::table('orders')
+        ->whereIn('payment_method', ['paypal', 'hyperpay'])
+        ->update(['payment_method' => 'cod']);
         DB::statement("ALTER TABLE orders MODIFY payment_method ENUM('stripe', 'paytabs', 'cod') NOT NULL");
     }
 
@@ -20,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE orders MODIFY payment_method ENUM('paypal', 'stripe', 'paytabs', 'cod') NOT NULL");
+        DB::statement("ALTER TABLE orders MODIFY payment_method ENUM('paypal', 'stripe', 'paytabs', 'hyperpay', 'cod') NOT NULL");
     }
 };

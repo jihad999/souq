@@ -64,6 +64,7 @@ class CheckoutController extends Controller
         session()->put('last_order_number', $order->order_number);
 
         if ($order->payment_method === 'cod') {
+            $this->orderService->sendOrderEmails($order);
             return redirect()->route('checkout.success', $order->order_number);
         }
 

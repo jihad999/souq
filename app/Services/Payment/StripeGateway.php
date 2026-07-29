@@ -27,7 +27,7 @@ class StripeGateway implements PaymentGatewayInterface
             'payment_method_types' => ['card'],
             'line_items' => [[
                 'price_data' => [
-                    'currency' => 'usd',
+                    'currency' => 'ils',
                     'product_data' => ['name' => "طلب رقم {$order->order_number}"],
                     'unit_amount' => (int) round($order->total * 100),
                 ],

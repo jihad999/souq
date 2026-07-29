@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Mail\NewOrderAdminNotification;
+use App\Mail\OrderInvoiceMail;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\PromoCode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class OrderService
 {
@@ -36,6 +39,8 @@ class OrderService
                 'customer_email' => $customerData['customer_email'],
                 'customer_phone' => $customerData['customer_phone'],
                 'shipping_address' => $customerData['shipping_address'],
+                'latitude' => $customerData['payment_method'] === 'cod' ? ($customerData['latitude'] ?? null) : null,
+                'longitude' => $customerData['payment_method'] === 'cod' ? ($customerData['longitude'] ?? null) : null,
                 'subtotal' => $subtotal,
                 'discount_amount' => $discount,
                 'total' => $total,
@@ -53,7 +58,6 @@ class OrderService
                     'total_price' => $item->product->final_price * $item->quantity,
                 ]);
 
-                // خصم الكمية من المخزون
                 $item->product->decrement('stock', $item->quantity);
             }
 
@@ -63,5 +67,19 @@ class OrderService
 
             return $order;
         });
+    }
+
+    /**
+     * يرسل الفاتورة للعميل + إشعار للشركة، بمكان واحد مركزي
+     * يستدعى من CheckoutController (لـ COD) ومن PaymentController (بعد نجاح الدفع الإلكتروني)
+     */
+    public function sendOrderEmails(Order $order): void
+    {
+        try {
+            Mail::to($order->customer_email)->send(new OrderInvoiceMail($order));
+            Mail::to(config('mail.company_email'))->send(new NewOrderAdminNotification($order));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send order emails: ' . $e->getMessage());
+        }
     }
 }

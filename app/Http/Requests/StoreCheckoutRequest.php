@@ -18,7 +18,9 @@ class StoreCheckoutRequest extends FormRequest
             'customer_email' => ['required', 'email', 'max:255'],
             'customer_phone' => ['required', 'string', 'max:50'],
             'shipping_address' => ['required', 'string', 'max:1000'],
-            'payment_method' => ['required', 'in:stripe,paytabs,hyperpay,cod'],
+            'payment_method' => ['required', 'in:stripe,paytabs,cod'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ];
     }
 

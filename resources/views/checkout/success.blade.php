@@ -25,11 +25,18 @@
                         @case('cod') الدفع عند الاستلام @break
                         @case('stripe') Stripe @break
                         @case('paytabs') PayTabs @break
-                        @case('hyperpay') HyperPay @break
                     @endswitch
                 </span>
             </div>
         </div>
+
+        @if($order->latitude && $order->longitude)
+            <a href="https://www.google.com/maps?q={{ $order->latitude }},{{ $order->longitude }}"
+            target="_blank"
+            class="cursor-pointer text-accent text-sm hover:underline block mt-3">
+                عرض موقع التوصيل على الخريطة
+            </a>
+        @endif
 
         <p class="text-sm text-gray-500 mb-6">تم إرسال تفاصيل الطلب إلى بريدك الإلكتروني.</p>
 
