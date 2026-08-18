@@ -100,9 +100,9 @@
             loading: false,
 
             init() {
-                // اعتراض النقر على روابط الـ Pagination (لأنها جوا HTML متجدد)
+                // اعتراض النقر بس على روابط الـ Pagination (جوا <nav>)، مش كل الروابط
                 document.getElementById('products-grid').addEventListener('click', (e) => {
-                    const link = e.target.closest('a');
+                    const link = e.target.closest('nav[role="navigation"] a');
                     if (link && link.href) {
                         e.preventDefault();
                         this.fetchPage(link.href);

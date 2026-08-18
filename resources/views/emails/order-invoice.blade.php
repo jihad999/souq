@@ -58,7 +58,12 @@
                 <tbody>
                     @foreach($order->items as $item)
                     <tr style="border-bottom: 1px solid #E2E8F0;">
-                        <td style="padding: 10px; color: #0F172A; font-size: 14px;">{{ $item->product_name }}</td>
+                        <td style="padding: 10px; color: #0F172A; font-size: 14px;">
+                            {{ $item->product_name }}
+                            @if($item->variant_label)
+                                <br><span style="color: #94A3B8; font-size: 12px;">{{ $item->variant_label }}</span>
+                            @endif
+                        </td>
                         <td style="padding: 10px; color: #475569; font-size: 14px; text-align: center;">{{ $item->quantity }}</td>
                         <td style="padding: 10px; color: #475569; font-size: 14px; text-align: left;">{{ number_format($item->unit_price, 2) }} ₪</td>
                         <td style="padding: 10px; color: #0F172A; font-weight: bold; font-size: 14px; text-align: left;">{{ number_format($item->total_price, 2) }} ₪</td>
@@ -88,7 +93,7 @@
             </table>
 
             <p style="color: #94A3B8; font-size: 13px; text-align: center; margin-top: 30px;">
-                لأي استفسار، تواصل معنا على [email protected]
+                لأي استفسار، تواصل معنا على {{env('COMPANY_EMAIL')}}
             </p>
         </div>
 

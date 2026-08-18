@@ -50,15 +50,32 @@ class OrderService
             ]);
 
             foreach ($cart->items as $item) {
+                $variant = $item->variant;
+                $price = $variant ? $variant->final_price : $item->product->final_price;
+
                 $order->items()->create([
                     'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
                     'product_name' => $item->product->name,
+                    'variant_label' => $variant?->label,
                     'quantity' => $item->quantity,
-                    'unit_price' => $item->product->final_price,
-                    'total_price' => $item->product->final_price * $item->quantity,
+                    'unit_price' => $price,
+                    'total_price' => $price * $item->quantity,
                 ]);
 
-                $item->product->decrement('stock', $item->quantity);
+                if ($variant) {
+                    if ($variant->stock < $item->quantity) {
+                        throw new \Exception(
+                            'المنتج "' . $item->product->name .
+                            '" لا تتوفر منه الكمية المطلوبة. المطلوبة: ' . $item->quantity .
+                            '، المتوفرة: ' . $variant->stock
+                        );
+                    }
+
+                    $variant->decrement('stock', $item->quantity);
+                } else {
+                    $item->product->decrement('stock', $item->quantity);
+                }
             }
 
             if ($promoCode) {

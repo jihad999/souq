@@ -38,15 +38,32 @@ class CartController extends Controller
 
     public function add(Request $request, Product $product)
     {
-        $request->validate([
-            'quantity' => ['nullable', 'integer', 'min:1', 'max:' . max($product->stock, 1)],
-        ]);
+        $variant = null;
 
-        if ($product->stock <= 0) {
-            return $this->respond($request, false, 'هذا المنتج غير متوفر حاليًا.');
+        if ($request->filled('variant_id')) {
+            $variant = $product->variants()->find($request->variant_id);
+
+            if (! $variant) {
+                return $this->respond($request, false, 'الخيار المحدد غير متوفر.');
+            }
         }
 
-        $this->cartService->addProduct($product, $request->get('quantity', 1));
+        $availableStock = $variant ? $variant->stock : $product->stock;
+
+        $request->validate([
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:' . max($availableStock, 1)],
+        ]);
+
+        if ($availableStock <= 0) {
+            return $this->respond($request, false, 'هذا الخيار غير متوفر حاليًا.');
+        }
+
+        // لو المنتج عنده variants ولسا ما اختار المستخدم وحدة، ما نسمح بالإضافة
+        if ($product->variants->isNotEmpty() && ! $variant) {
+            return $this->respond($request, false, 'يرجى اختيار الخيار المطلوب أولاً.');
+        }
+
+        $this->cartService->addProduct($product, $request->get('quantity', 1), $variant?->id);
 
         return $this->respond($request, true, 'تمت إضافة المنتج للسلة.');
     }
@@ -97,7 +114,7 @@ class CartController extends Controller
     {
         if ($request->wantsJson() || $request->ajax()) {
             $cart = $this->cartService->getCurrentCart();
-            $cart->load('items.product');
+            $cart->load('items.product', 'items.variant.attributeValues.attribute');
 
             return response()->json([
                 'success' => $success,
@@ -107,11 +124,13 @@ class CartController extends Controller
                 'cartItems' => $cart->items->map(fn ($item) => [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
+                    'variant_id' => $item->product_variant_id,
                     'name' => $item->product->name,
+                    'variant_label' => $item->variant?->label,
                     'image' => $item->product->main_image ? asset('storage/' . $item->product->main_image) : null,
                     'quantity' => (int) $item->quantity,
-                    'price' => (float) $item->product->final_price,
-                    'lineTotal' => (float) ($item->product->final_price * $item->quantity),
+                    'price' => (float) ($item->variant ? $item->variant->final_price : $item->product->final_price),
+                    'lineTotal' => (float) (($item->variant ? $item->variant->final_price : $item->product->final_price) * $item->quantity),
                 ]),
             ]);
         }

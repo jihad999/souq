@@ -10,6 +10,7 @@ class OfferController extends Controller
     {
         $products = Product::onSale()
             ->where('is_active', true)
+            ->withCount('variants')
             ->paginate(12);
 
         return view('offers', compact('products'));

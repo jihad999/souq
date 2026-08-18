@@ -4,99 +4,170 @@
 @section('content')
 <div class="container mx-auto px-4 py-10">
 
-    <div class="grid md:grid-cols-2 gap-10 bg-white rounded-xl shadow p-8">
+    <div class="grid md:grid-cols-2 gap-10 bg-white rounded-xl shadow p-8"
+         x-data="productVariants(
+            {{ Illuminate\Support\Js::from($product->attributes->map(fn($attr) => [
+                'id' => $attr->id,
+                'values' => $attr->values->map(fn($v) => ['id' => $v->id])->values(),
+            ])->values()) }},
+            {{ Illuminate\Support\Js::from($product->variants->map(fn($v) => [
+                'id' => $v->id,
+                'stock' => $v->stock,
+                'price' => $v->final_price,
+                'value_ids' => $v->attributeValues->pluck('id')->all(),
+            ])) }},
+            {{ (float) ($product->hasActiveSale() ? $product->sale_price : $product->price) }}
+         )"
+         x-init="init()">
 
         {{-- الصور --}}
-        <div>
+        <div x-data="{ activeImage: '{{ $product->main_image ? asset('storage/' . $product->main_image) : '' }}' }">
             <div class="h-80 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden mb-4">
                 @if($product->main_image)
-                    <img src="{{ asset('storage/' . $product->main_image) }}" class="w-full h-full object-cover">
+                    <img :src="activeImage" class="w-full h-full object-cover transition">
                 @else
                     <span class="text-gray-400">لا توجد صورة</span>
                 @endif
             </div>
+
             @if($product->images->isNotEmpty())
             <div class="grid grid-cols-4 gap-3">
+                <button @click="activeImage = '{{ asset('storage/' . $product->main_image) }}'"
+                        class="cursor-pointer h-20 bg-gray-100 rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-accent transition">
+                    <img src="{{ asset('storage/' . $product->main_image) }}" class="w-full h-full object-cover">
+                </button>
                 @foreach($product->images as $image)
-                <div class="h-20 bg-gray-100 rounded-lg overflow-hidden">
+                <button @click="activeImage = '{{ asset('storage/' . $image->image) }}'"
+                        class="cursor-pointer h-20 bg-gray-100 rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-accent transition">
                     <img src="{{ asset('storage/' . $image->image) }}" class="w-full h-full object-cover">
-                </div>
+                </button>
                 @endforeach
             </div>
             @endif
         </div>
-
         {{-- التفاصيل --}}
         <div>
-            <span class="text-sm text-accent font-medium">{{ $product->category->name }}</span>
-            <h1 class="text-2xl md:text-3xl font-bold text-primary mt-2 mb-4">{{ $product->name }}</h1>
+            {{-- الفئات --}}
+            <div class="flex flex-wrap gap-2 mb-3">
+                @foreach($product->categories as $cat)
+                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{{ $cat->name }}</span>
+                @endforeach
+            </div>
 
+            <h1 class="text-2xl md:text-3xl font-bold text-primary mb-4">{{ $product->name }}</h1>
+
+            {{-- السعر (تفاعلي حسب الاختيار) --}}
             <div class="flex items-center gap-3 mb-6">
+                <span class="text-2xl font-bold text-primary" x-text="currentPrice.toFixed(2) + ' ₪'"></span>
                 @if($product->hasActiveSale())
-                    <span class="text-2xl font-bold text-sale">{{ number_format($product->sale_price, 2) }} ₪</span>
-                    <span class="text-lg text-gray-400 line-through">{{ number_format($product->price, 2) }} ₪</span>
-                    <span class="bg-sale text-white text-xs font-bold px-2 py-1 rounded">خصم</span>
-                @else
-                    <span class="text-2xl font-bold text-primary">{{ number_format($product->price, 2) }} ₪</span>
+                    <span class="text-lg text-gray-400 line-through" x-show="!hasVariants">{{ number_format($product->price, 2) }} ₪</span>
+                    <span class="bg-sale text-white text-xs font-bold px-2 py-1 rounded" x-show="!hasVariants">خصم</span>
                 @endif
             </div>
 
+            {{-- اختيار الخصائص (Radio buttons) --}}
+            @if($product->attributes->isNotEmpty())
+            <div class="mb-6 space-y-4">
+                @foreach($product->attributes as $attribute)
+                <div>
+                    <span class="text-sm font-medium text-gray-500 block mb-2">{{ $attribute->name }}</span>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($attribute->values as $val)
+                        <button type="button"
+                                @click="select({{ $attribute->id }}, {{ $val->id }})"
+                                :class="selected[{{ $attribute->id }}] === {{ $val->id }}
+                                    ? 'bg-primary text-white border-primary'
+                                    : 'bg-white text-primary border-gray-200 hover:border-accent'"
+                                class="cursor-pointer border rounded-lg px-4 py-2 text-sm font-medium transition">
+                            {{ $val->value }}
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
             <p class="text-gray-600 leading-7 mb-6">{{ $product->description }}</p>
 
-            <p class="text-sm text-gray-500 mb-6">
-                @if($product->stock > 0)
-                    <span class="text-success">متوفر بالمخزون ({{ $product->stock }} قطعة)</span>
-                @else
-                    <span class="text-sale">غير متوفر حاليًا</span>
-                @endif
+            {{-- حالة المخزون (تفاعلية) --}}
+            <p class="text-sm mb-6">
+                <template x-if="hasVariants && matchedVariant && matchedVariant.stock > 0">
+                    <span class="text-success">متوفر بالمخزون (<span x-text="matchedVariant.stock"></span> قطعة)</span>
+                </template>
+                <template x-if="hasVariants && matchedVariant && matchedVariant.stock <= 0">
+                    <span class="text-sale">غير متوفر حاليًا بهذا الخيار</span>
+                </template>
+                <template x-if="hasVariants && !matchedVariant">
+                    <span class="text-gray-500">يرجى اختيار كل الخيارات أعلاه</span>
+                </template>
+                <template x-if="!hasVariants">
+                    <span class="{{ $product->stock > 0 ? 'text-success' : 'text-sale' }}">
+                        {{ $product->stock > 0 ? 'متوفر بالمخزون (' . $product->stock . ' قطعة)' : 'غير متوفر حاليًا' }}
+                    </span>
+                </template>
             </p>
 
-            @if($product->stock > 0)
-                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex gap-4">
-                    @csrf
-                    <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}"
-                        class="w-20 border rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-accent focus:outline-none">
-                    <button type="submit"
-                            class="cursor-pointer flex-1 bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition">
-                        أضف للسلة
-                    </button>
-                </form>
-            @else
+            {{-- فورم الإضافة للسلة --}}
+            <template x-if="canAddToCart">
+                <div>
+                    <div class="flex gap-4">
+                        <input type="number" x-model.number="quantity" min="1" :max="maxQuantity"
+                               class="w-20 border rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-accent focus:outline-none">
+                        <button type="button" @click="addToCart()" :disabled="adding"
+                                class="cursor-pointer flex-1 bg-accent hover:bg-accent-dark disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition">
+                            <span x-show="!adding">أضف للسلة</span>
+                            <span x-show="adding">جاري الإضافة...</span>
+                        </button>
+                    </div>
+                    <p x-show="addError" x-text="addError" class="text-sale text-sm mt-2"></p>
+                    <p x-show="addSuccess" class="text-success text-sm mt-2 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        تمت الإضافة للسلة بنجاح
+                    </p>
+                </div>
+            </template>
+
+            {{-- لو المنتج (بدون variants) نفدت كميته بالكامل: نموذج "نبهني" --}}
+            @if($product->stock <= 0)
+            <template x-if="!hasVariants">
                 <div x-data="{
-                        email: '',
-                        quantity: 1,
-                        submitted: false,
-                        loading: false,
-                        error: '',
-                        async submit() {
-                            this.loading = true;
-                            this.error = '';
-                            try {
-                                const response = await fetch('{{ route('stock-notifications.store') }}', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                    },
-                                    body: JSON.stringify({
-                                        product_id: {{ $product->id }},
-                                        email: this.email,
-                                        quantity: this.quantity,
-                                    }),
-                                });
-                                const data = await response.json();
-                                if (data.success) {
-                                    this.submitted = true;
-                                } else {
-                                    this.error = data.message || 'حدث خطأ، حاول مرة أخرى.';
-                                }
-                            } catch (e) {
-                                this.error = 'حدث خطأ، حاول مرة أخرى.';
+                    email: '',
+                    notifyQuantity: 1,
+                    submitted: false,
+                    loading: false,
+                    error: '',
+                    async submit() {
+                        this.loading = true;
+                        this.error = '';
+                        try {
+                            const response = await fetch('{{ route('stock-notifications.store') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                },
+                                body: JSON.stringify({
+                                    product_id: {{ $product->id }},
+                                    email: this.email,
+                                    quantity: this.notifyQuantity,
+                                }),
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                                this.submitted = true;
+                            } else {
+                                this.error = data.message || 'حدث خطأ، حاول مرة أخرى.';
                             }
-                            this.loading = false;
+                        } catch (e) {
+                            this.error = 'حدث خطأ، حاول مرة أخرى.';
                         }
-                    }" class="bg-gray-50 border border-gray-200 rounded-xl p-5">
+                        this.loading = false;
+                    }
+                }" class="bg-gray-50 border border-gray-200 rounded-xl p-5">
 
                     <template x-if="!submitted">
                         <div>
@@ -104,10 +175,10 @@
                                 هذا المنتج غير متوفر حاليًا. سجّل بريدك والكمية المطلوبة ونبلغك فور توفره.
                             </p>
                             <div class="flex gap-2">
-                                <input type="number" x-model="quantity" min="1" max="100"
-                                    class="w-20 border rounded-lg px-3 py-2 text-sm text-center focus:ring-2 focus:ring-accent focus:outline-none">
+                                <input type="number" x-model="notifyQuantity" min="1" max="100"
+                                       class="w-20 border rounded-lg px-3 py-2 text-sm text-center focus:ring-2 focus:ring-accent focus:outline-none">
                                 <input type="email" x-model="email" placeholder="بريدك الإلكتروني"
-                                    class="flex-1 border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-accent focus:outline-none">
+                                       class="flex-1 border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-accent focus:outline-none">
                                 <button @click="submit()" :disabled="loading || !email"
                                         class="cursor-pointer bg-primary hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 rounded-lg transition">
                                     <span x-show="!loading">نبهني</span>
@@ -127,6 +198,7 @@
                         </p>
                     </template>
                 </div>
+            </template>
             @endif
         </div>
     </div>
@@ -143,4 +215,104 @@
     </div>
     @endif
 </div>
+
 @endsection
+
+
+@push('scripts')
+<script>
+    function productVariants(attributesData, variants, basePrice) {
+        return {
+            attributesData: attributesData,
+            variants: variants,
+            hasVariants: variants.length > 0,
+            selected: {},
+            matchedVariant: null,
+            currentPrice: basePrice,
+            quantity: 1,
+            adding: false,
+            addError: '',
+            addSuccess: false,
+
+            init() {
+                const defaults = {};
+                this.attributesData.forEach(attr => {
+                    if (attr.values.length > 0) {
+                        defaults[attr.id] = attr.values[0].id;
+                    }
+                });
+                this.selected = defaults;
+                this.updateMatch();
+            },
+
+            select(attributeId, valueId) {
+                this.selected = { ...this.selected, [attributeId]: valueId };
+                this.addError = '';
+                this.addSuccess = false;
+                this.updateMatch();
+            },
+
+            updateMatch() {
+                if (!this.hasVariants) {
+                    this.currentPrice = basePrice;
+                    return;
+                }
+
+                const selectedIds = Object.values(this.selected).map(Number).sort((a, b) => a - b);
+
+                this.matchedVariant = this.variants.find(v => {
+                    const ids = [...v.value_ids].map(Number).sort((a, b) => a - b);
+                    return ids.length === selectedIds.length && ids.every((id, i) => id === selectedIds[i]);
+                }) || null;
+
+                if (this.matchedVariant) {
+                    this.currentPrice = this.matchedVariant.price;
+                    this.quantity = Math.min(this.quantity, Math.max(this.matchedVariant.stock, 1));
+                } else {
+                    this.currentPrice = basePrice;
+                }
+            },
+
+            get maxQuantity() {
+                if (this.hasVariants) {
+                    return this.matchedVariant ? this.matchedVariant.stock : 1;
+                }
+                return {{ $product->stock }};
+            },
+
+            get canAddToCart() {
+                if (this.hasVariants) {
+                    return this.matchedVariant && this.matchedVariant.stock > 0;
+                }
+                return {{ $product->stock }} > 0;
+            },
+
+            async addToCart() {
+                if (!this.canAddToCart) return;
+                this.adding = true;
+                this.addError = '';
+                this.addSuccess = false;
+                try {
+                    const result = await this.$store.cart.add(
+                        {{ $product->id }},
+                        this.quantity,
+                        this.matchedVariant ? this.matchedVariant.id : null
+                    );
+
+                    if (result && result.success !== false) {
+                        this.addSuccess = true;
+                        setTimeout(() => this.addSuccess = false, 3000);
+                    } else {
+                        this.addError = (result && result.message) || 'حدث خطأ، حاول مرة أخرى.';
+                    }
+                } catch (e) {
+                    console.error('Add to cart error:', e);
+                    this.addError = 'حدث خطأ غير متوقع، حاول مرة أخرى.';
+                } finally {
+                    this.adding = false;
+                }
+            },
+        };
+    }
+</script>
+@endpush

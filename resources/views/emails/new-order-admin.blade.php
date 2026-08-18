@@ -59,7 +59,7 @@
             <h3 style="color: #0F172A; font-size: 15px;">المنتجات المطلوبة</h3>
             <ul style="padding-right: 20px; color: #475569; font-size: 14px; line-height: 1.8;">
                 @foreach($order->items as $item)
-                    <li>{{ $item->product_name }} × {{ $item->quantity }} — {{ number_format($item->total_price, 2) }} ₪</li>
+                    <li>{{ $item->product_name }} @if($item->variant_label) <br><span style="color: #94A3B8; font-size: 12px;">{{ $item->variant_label }}</span> @endif × {{ $item->quantity }} — {{ number_format($item->total_price, 2) }} ₪</li>
                 @endforeach
             </ul>
         </div>

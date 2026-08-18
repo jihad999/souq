@@ -18,7 +18,7 @@ class CheckoutController extends Controller
     public function index()
     {
         $cart = $this->cartService->getCurrentCart();
-        $cart->load('items.product');
+        $cart->load('items.product', 'items.variant.attributeValues.attribute');
 
         if ($cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'سلتك فارغة، أضف منتجات أولاً.');
@@ -54,10 +54,14 @@ class CheckoutController extends Controller
             }
         }
 
-        $order = $this->orderService->createFromCart(
-            cart: $cart,
-            customerData: $request->validated(),
-        );
+        try {
+            $order = $this->orderService->createFromCart(
+                cart: $cart,
+                customerData: $request->validated(),
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         $this->cartService->clearCart();
         session()->forget('promo_code_id');

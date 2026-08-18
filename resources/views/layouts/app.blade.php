@@ -14,8 +14,10 @@
                 'name' => $item->product->name,
                 'image' => $item->product->main_image ? asset('storage/' . $item->product->main_image) : null,
                 'quantity' => (int) $item->quantity,
-                'price' => (float) $item->product->final_price,
+                'price' => (float) ($item->variant ? $item->variant->final_price : $item->product->final_price),
                 'lineTotal' => (float) ($item->product->final_price * $item->quantity),
+                'variant_id' => $item->product_variant_id,
+                'variant_label' => $item->variant?->label,
             ];
         });
     @endphp
@@ -84,6 +86,7 @@
 
                                             <div class="flex-1 min-w-0">
                                                 <p class="text-sm font-medium truncate" x-text="item.name"></p>
+                                                <p x-show="item.variant_label" x-text="item.variant_label" class="text-xs text-gray-400"></p>
                                                 <p class="text-xs text-gray-500">
                                                     <span x-text="item.quantity"></span> × <span x-text="item.price.toFixed(2)"></span> ₪
                                                 </p>

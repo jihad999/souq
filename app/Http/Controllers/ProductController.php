@@ -36,7 +36,7 @@ class ProductController extends Controller
             default => $query->latest(),
         };
 
-        $products = $query->paginate(12)->withQueryString();
+        $products = $query->withCount('variants')->paginate(12)->withQueryString();
         $categories = Category::where('is_active', true)->get();
 
         if ($request->ajax()) {
@@ -53,6 +53,7 @@ class ProductController extends Controller
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
+            ->withCount('variants')
             ->take(4)
             ->get();
 

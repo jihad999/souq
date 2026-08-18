@@ -11,12 +11,14 @@ class HomeController extends Controller
     {
         $featuredProducts = Product::query()
             ->where('is_active', true)
+            ->withCount('variants')
             ->latest()
             ->take(8)
             ->get();
 
         $onSaleProducts = Product::onSale()
             ->where('is_active', true)
+            ->withCount('variants')
             ->take(4)
             ->get();
 

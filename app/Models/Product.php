@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -24,9 +24,30 @@ class Product extends Model
         'sale_price' => 'decimal:2',
     ];
 
-    public function category(): BelongsTo
+    public function attributes(): HasMany
     {
-        return $this->belongsTo(Category::class);
+        return $this->hasMany(ProductAttribute::class)->orderBy('order');
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    // يلاقي الـ Variant المطابق تمامًا لمجموعة قيم محددة (مثلاً: أسود + 128GB)
+    public function findVariantByValues(array $valueIds): ?ProductVariant
+    {
+        sort($valueIds);
+
+        return $this->variants->first(function ($variant) use ($valueIds) {
+            $variantValueIds = $variant->attributeValues->pluck('id')->sort()->values()->all();
+            return $variantValueIds === array_values($valueIds);
+        });
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_product');
     }
 
     public function images(): HasMany
@@ -63,5 +84,19 @@ class Product extends Model
             ->where(function ($q) {
                 $q->whereNull('sale_ends_at')->orWhere('sale_ends_at', '>=', now());
             });
+    }
+
+    public function getHasVariantsAttribute(): bool
+    {
+        if ($this->relationLoaded('variants') || array_key_exists('variants_count', $this->attributes)) {
+            return ($this->variants_count ?? $this->variants->count()) > 0;
+        }
+
+        return $this->variants()->exists();
+    }
+
+    public function getTotalStockAttribute()
+    {
+        return $this->has_variants ? $this->variants->sum('stock') : $this->stock;
     }
 }

@@ -25,17 +25,21 @@ class CartService
         return Cart::firstOrCreate(['session_id' => $sessionId]);
     }
 
-    public function addProduct(Product $product, int $quantity = 1): void
+    public function addProduct(Product $product, int $quantity = 1, ?int $variantId = null): void
     {
         $cart = $this->getCurrentCart();
 
-        $item = $cart->items()->where('product_id', $product->id)->first();
+        $item = $cart->items()
+            ->where('product_id', $product->id)
+            ->where('product_variant_id', $variantId)
+            ->first();
 
         if ($item) {
             $item->increment('quantity', $quantity);
         } else {
             $cart->items()->create([
                 'product_id' => $product->id,
+                'product_variant_id' => $variantId,
                 'quantity' => $quantity,
             ]);
         }

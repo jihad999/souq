@@ -12,7 +12,7 @@
             </div>
         @endif
 
-        <form action="{{ route('checkout.store') }}" method="POST" class="grid md:grid-cols-3 gap-8" x-data="checkoutMap()" x-init="init()">
+        <form action="{{ route('checkout.store') }}" method="POST" class="grid md:grid-cols-3 gap-8" x-data="checkoutMap()" x-init="init()" @submit="if (paymentMethod !== 'cod') { latitude = ''; longitude = ''; }">
             @csrf
 
             {{-- بيانات الشحن + الدفع --}}
@@ -71,8 +71,12 @@
 
                     <div id="checkout-map" style="height: 350px; border-radius: 12px;" class="mb-3"></div>
 
-                    <input type="hidden" name="latitude" x-model="latitude">
-                    <input type="hidden" name="longitude" x-model="longitude">
+                    <template x-if="paymentMethod === 'cod'">
+                        <div>
+                            <input type="hidden" name="latitude" x-model="latitude">
+                            <input type="hidden" name="longitude" x-model="longitude">
+                        </div>
+                    </template>
 
                     <p class="text-xs text-gray-400" x-show="latitude && longitude">
                         الإحداثيات المحددة: <span x-text="latitude"></span>, <span x-text="longitude"></span>
@@ -122,10 +126,15 @@
 
                 <div class="space-y-3 mb-6 max-h-64 overflow-y-auto">
                     @foreach($cart->items as $item)
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">{{ $item->product->name }} × {{ $item->quantity }}</span>
-                        <span class="font-medium">{{ number_format($item->product->final_price * $item->quantity, 2) }} ₪</span>
-                    </div>
+                        <div class="flex justify-between text-sm">
+                            <div>
+                                <span class="text-gray-600">{{ $item->product->name }} × {{ $item->quantity }}</span>
+                                @if($item->variant)
+                                    <span class="block text-xs text-gray-400">{{ $item->variant->label }}</span>
+                                @endif
+                            </div>
+                            <span class="font-medium">{{ number_format(($item->variant ? $item->variant->final_price : $item->product->final_price) * $item->quantity, 2) }} ₪</span>
+                        </div>
                     @endforeach
                 </div>
 
@@ -172,6 +181,10 @@
                     this.$watch('paymentMethod', (value) => {
                         if (value === 'cod') {
                             this.$nextTick(() => this.initMap());
+                        } else {
+                            // امسح الإحداثيات لما يبدل لطريقة دفع غير COD
+                            this.latitude = null;
+                            this.longitude = null;
                         }
                     });
 

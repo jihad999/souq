@@ -30,7 +30,7 @@
             </div>
         </div>
 
-        @if($order->latitude && $order->longitude)
+        @if($order->payment_method === 'cod' && $order->latitude && $order->longitude)
             <a href="https://www.google.com/maps?q={{ $order->latitude }},{{ $order->longitude }}"
             target="_blank"
             class="cursor-pointer text-accent text-sm hover:underline block mt-3">

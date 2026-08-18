@@ -47,8 +47,16 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        async add(productId, quantity = 1) {
-            const result = await this.request(`/cart/add/${productId}`, 'POST', { quantity });
+        async add(productId, quantity = 1, variantId = null) {
+            const result = await this.request(
+                `/cart/add/${productId}`,
+                'POST',
+                {
+                    quantity,
+                    variant_id: variantId
+                }
+            );
+
             return result;
         },
 

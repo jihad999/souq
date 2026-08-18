@@ -50,6 +50,7 @@
 
                     <div class="flex-1">
                         <p class="font-semibold text-primary" x-text="item.name"></p>
+                        <p x-show="item.variant_label" x-text="item.variant_label" class="text-xs text-gray-400 mt-0.5"></p>
                         <p class="text-sm text-gray-500 mt-1">
                             <span x-text="item.price.toFixed(2)"></span> ₪ / قطعة
                         </p>
