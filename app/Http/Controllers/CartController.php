@@ -47,7 +47,7 @@ class CartController extends Controller
                 return $this->respond($request, false, 'الخيار المحدد غير متوفر.');
             }
         }
-
+        
         $availableStock = $variant ? $variant->stock : $product->stock;
 
         $request->validate([

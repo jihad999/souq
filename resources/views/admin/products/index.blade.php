@@ -1,0 +1,80 @@
+@extends('layouts.admin')
+@section('title', 'إدارة المنتجات - سوق')
+@section('page-title', 'المنتجات')
+
+@section('content')
+
+<div class="flex justify-end mb-6">
+    <a href="{{ route('admin.products.create') }}"
+       class="cursor-pointer bg-accent hover:bg-accent-dark text-white font-medium px-5 py-2.5 rounded-lg transition">
+        + إضافة منتج جديد
+    </a>
+</div>
+
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr class="text-right text-gray-500">
+                <th class="p-4">الصورة</th>
+                <th class="p-4">الاسم</th>
+                <th class="p-4">الفئة</th>
+                <th class="p-4">السعر</th>
+                <th class="p-4">المخزون</th>
+                <th class="p-4">الحالة</th>
+                <th class="p-4">الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($products as $product)
+            <tr class="border-t">
+                <td class="p-4">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                        @if($product->main_image)
+                            <img src="{{ asset('storage/' . $product->main_image) }}" class="w-full h-full object-cover">
+                        @endif
+                    </div>
+                </td>
+                <td class="p-4 font-medium text-primary">{{ $product->name }}</td>
+                <td class="p-4 text-gray-500">{{ $product->category->name }}</td>
+                <td class="p-4">{{ number_format($product->price, 2) }} ₪</td>
+                <td class="p-4">
+                    @if($product->variants_count > 0)
+                        <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">{{ $product->variants_count }} خيار</span>
+                    @else
+                        {{ $product->stock }}
+                    @endif
+                </td>
+                <td class="p-4">
+                    @if($product->is_active)
+                        <span class="text-xs bg-green-50 text-success px-2 py-1 rounded">نشط</span>
+                    @else
+                        <span class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">غير نشط</span>
+                    @endif
+                </td>
+                <td class="p-4">
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('admin.products.edit', $product) }}" class="cursor-pointer text-accent hover:underline">تعديل</a>
+                        <form action="{{ route('admin.products.destroy', $product) }}" method="POST"
+                              x-data
+                              @submit.prevent="$store.confirm.show('هل أنت متأكد من حذف هذا المنتج؟', () => $el.submit())">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="cursor-pointer text-sale hover:underline">حذف</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="7" class="p-8 text-center text-gray-500">لا يوجد منتجات بعد.</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-6">
+    {{ $products->links() }}
+</div>
+
+@endsection
