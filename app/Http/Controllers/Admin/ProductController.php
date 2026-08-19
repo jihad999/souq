@@ -96,17 +96,40 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $product->delete(); // هلق Soft Delete بدل الحذف النهائي
+
+        return redirect()->route('admin.products.index')->with('success', 'تم نقل المنتج للمحذوفات.');
+    }
+
+    public function trashed()
+    {
+        $products = Product::onlyTrashed()->with('category')->latest('deleted_at')->paginate(15);
+
+        return view('admin.products.trashed', compact('products'));
+    }
+
+    public function restore($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore();
+
+        return back()->with('success', 'تم استرجاع المنتج بنجاح.');
+    }
+
+    public function forceDelete($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+
         if ($product->main_image) {
             Storage::disk('public')->delete($product->main_image);
         }
-
         foreach ($product->images as $image) {
             Storage::disk('public')->delete($image->image);
         }
 
-        $product->delete();
+        $product->forceDelete();
 
-        return redirect()->route('admin.products.index')->with('success', 'تم حذف المنتج بنجاح.');
+        return back()->with('success', 'تم حذف المنتج نهائيًا.');
     }
 
     public function destroyImage(ProductImage $image)

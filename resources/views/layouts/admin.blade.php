@@ -130,5 +130,38 @@
         </div>
     </div>
 
+    {{-- Confirm Modal --}}
+    <div x-data
+        x-show="$store.confirm.open"
+        x-transition.opacity
+        class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center px-4"
+        style="display: none;">
+        <div x-show="$store.confirm.open"
+            x-transition
+            @click.outside="$store.confirm.cancel()"
+            class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center">
+
+            <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-red-50 flex items-center justify-center text-sale">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+
+            <p class="text-primary font-medium mb-6" x-text="$store.confirm.message"></p>
+
+            <div class="flex gap-3">
+                <button @click="$store.confirm.cancel()"
+                        class="cursor-pointer flex-1 bg-gray-100 hover:bg-gray-200 text-primary font-medium py-2.5 rounded-lg transition">
+                    إلغاء
+                </button>
+                <button @click="$store.confirm.confirmed()"
+                        class="cursor-pointer flex-1 bg-sale hover:bg-red-700 text-white font-medium py-2.5 rounded-lg transition">
+                    تأكيد الحذف
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

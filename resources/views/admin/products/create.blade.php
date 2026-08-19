@@ -27,27 +27,26 @@
                 </select>
                 @error('category_id') <p class="text-sale text-sm mt-1">{{ $message }}</p> @enderror
             </div>
-        </div>
-
-        <div class="mb-4">
+            <div>
             <label class="block text-sm font-medium mb-1">فئات إضافية (اختياري)</label>
-            <select name="extra_categories[]" multiple class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent focus:outline-none h-32">
-                @foreach($categories as $category)
-                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                @endforeach
-            </select>
-            <p class="text-xs text-gray-400 mt-1">اضغط Ctrl (أو Cmd على Mac) لاختيار أكثر من فئة</p>
-        </div>
+                <select name="extra_categories[]" multiple class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent focus:outline-none h-32">
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-400 mt-1">اضغط Ctrl (أو Cmd على Mac) لاختيار أكثر من فئة</p>
+            </div>
 
-        <div class="mb-4">
-            <label class="block text-sm font-medium mb-1">الوصف</label>
-            <textarea name="description" rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent focus:outline-none">{{ old('description') }}</textarea>
-        </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">الوصف</label>
+                <textarea name="description" rows="4" class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-accent focus:outline-none">{{ old('description') }}</textarea>
+            </div>
 
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="cursor-pointer">
-            <span class="text-sm">منتج نشط (يظهر بالموقع)</span>
-        </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="cursor-pointer">
+                <span class="text-sm">منتج نشط (يظهر بالموقع)</span>
+            </label>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow p-6 mb-6">

@@ -65,12 +65,35 @@ class CategoryController extends Controller
             return back()->with('error', 'لا يمكن حذف هذه الفئة لأنها مرتبطة بمنتجات موجودة.');
         }
 
+        $category->delete();
+
+        return redirect()->route('admin.categories.index')->with('success', 'تم نقل الفئة للمحذوفات.');
+    }
+
+    public function trashed()
+    {
+        $categories = Category::onlyTrashed()->latest('deleted_at')->paginate(15);
+
+        return view('admin.categories.trashed', compact('categories'));
+    }
+
+    public function restore($id)
+    {
+        Category::onlyTrashed()->findOrFail($id)->restore();
+
+        return back()->with('success', 'تم استرجاع الفئة بنجاح.');
+    }
+
+    public function forceDelete($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+
         if ($category->image) {
             Storage::disk('public')->delete($category->image);
         }
 
-        $category->delete();
+        $category->forceDelete();
 
-        return redirect()->route('admin.categories.index')->with('success', 'تم حذف الفئة بنجاح.');
+        return back()->with('success', 'تم حذف الفئة نهائيًا.');
     }
 }
