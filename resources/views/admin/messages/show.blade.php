@@ -8,7 +8,7 @@
     <a href="{{ route('admin.messages.index') }}" class="cursor-pointer text-sm text-gray-500 hover:text-accent">← الرجوع لكل الرسائل</a>
 </div>
 
-<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+<div class="bg-white rounded-xl shadow p-6">
     <div class="grid md:grid-cols-2 gap-4 mb-6 pb-6 border-b">
         <div>
             <p class="text-gray-500 text-sm mb-1">الاسم</p>
@@ -16,7 +16,7 @@
         </div>
         <div>
             <p class="text-gray-500 text-sm mb-1">البريد الإلكتروني</p>
-            <p class="font-medium" dir="ltr">{{ $message->email }}</p>
+            <p class="font-medium text-end" dir="ltr">{{ $message->email }}</p>
         </div>
         <div>
             <p class="text-gray-500 text-sm mb-1">الموضوع</p>

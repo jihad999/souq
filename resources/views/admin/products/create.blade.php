@@ -4,7 +4,7 @@
 
 @section('content')
 
-<form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl">
+<form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
 
     <div class="bg-white rounded-xl shadow p-6 mb-6">

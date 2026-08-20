@@ -88,16 +88,16 @@ class CartController extends Controller
     {
         $request->validate(['code' => ['required', 'string']]);
 
-        $promoCode = PromoCode::where('code', $request->code)->first();
+        $promoCode = PromoCode::where('code', strtoupper($request->code))->first();
         $cart = $this->cartService->getCurrentCart();
 
         if (! $promoCode || ! $promoCode->isValid($cart->subtotal)) {
-            return $this->respond($request, false, 'كود الخصم غير صالح أو منتهي الصلاحية.');
+            return back()->with('error', 'كود الخصم غير صالح أو منتهي الصلاحية.');
         }
 
         session()->put('promo_code_id', $promoCode->id);
 
-        return $this->respond($request, true, 'تم تفعيل كود الخصم بنجاح.');
+        return back()->with('success', 'تم تفعيل كود الخصم بنجاح.');
     }
 
     public function removePromo(Request $request)

@@ -38,10 +38,6 @@ Route::get('/checkout/success/{order:order_number}', [CheckoutController::class,
 Route::get('/payment/{order:order_number}', [PaymentController::class, 'process'])->name('payment.process');
 Route::match(['get', 'post'], '/payment/{order:order_number}/callback', [PaymentController::class, 'callback'])->name('payment.callback');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

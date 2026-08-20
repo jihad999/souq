@@ -21,12 +21,12 @@
             <div class="bg-white rounded-xl shadow p-6">
                 <div class="text-accent text-2xl mb-2">📞</div>
                 <h3 class="font-semibold text-primary mb-1">الهاتف</h3>
-                <p class="text-gray-500 text-sm" dir="ltr">+970 000 000 000</p>
+                <a href="tel:+970 000 000 000" class="text-gray-500 text-sm text-end" dir="ltr">+970 000 000 000</a>
             </div>
             <div class="bg-white rounded-xl shadow p-6">
                 <div class="text-accent text-2xl mb-2">✉️</div>
                 <h3 class="font-semibold text-primary mb-1">البريد الإلكتروني</h3>
-                <p class="text-gray-500 text-sm" dir="ltr">[email protected]</p>
+                <a href="mailto:{{env('COMPANY_EMAIL')}}" class="text-gray-500 text-sm text-end" dir="ltr">{{env('COMPANY_EMAIL')}}</a>
             </div>
         </div>
 

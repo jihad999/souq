@@ -4,15 +4,29 @@
 @section('content')
 <div class="container mx-auto px-4 py-10" x-data="{
     promoCode: null,
+    promoType: null,
+    promoValue: 0,
+    minOrderAmount: 0,
     discount: 0,
     total: 0,
     init() {
-        this.discount = {{ $discount ?? 0 }};
-        this.promoCode = @json($promoCode?->code);
+        this.promoCode = {{ Illuminate\Support\Js::from($promoCode?->code) }};
+        this.promoType = {{ Illuminate\Support\Js::from($promoCode?->type) }};
+        this.promoValue = {{ (float) ($promoCode?->value ?? 0) }};
+        this.minOrderAmount = {{ (float) ($promoCode?->min_order_amount ?? 0) }};
         this.$watch('$store.cart.subtotal', () => this.recalculate());
         this.recalculate();
     },
     recalculate() {
+        if (!this.promoCode || $store.cart.subtotal < this.minOrderAmount) {
+            this.discount = 0;
+        } else if (this.promoType === 'percentage') {
+            this.discount = $store.cart.subtotal * (this.promoValue / 100);
+        } else if (this.promoType === 'fixed') {
+            this.discount = Math.min(this.promoValue, $store.cart.subtotal);
+        } else {
+            this.discount = 0;
+        }
         this.total = $store.cart.subtotal - this.discount;
     }
 }">
@@ -57,15 +71,27 @@
                     </div>
 
                     <input type="number" :value="item.quantity" min="1"
-                           @change="$store.cart.updateQuantity(item.id, $event.target.value)"
-                           class="w-16 border rounded-lg px-2 py-1 text-center focus:ring-2 focus:ring-accent focus:outline-none">
+                        @change="$store.cart.updateQuantity(item.id, $event.target.value)"
+                        class="w-16 border rounded-lg px-2 py-1 text-center focus:ring-2 focus:ring-accent focus:outline-none">
 
-                    <span class="font-bold text-primary w-24 text-left" x-text="item.lineTotal.toFixed(2) + ' ₪'"></span>
+                    <div class="w-32 text-left">
+                        <template x-if="discount > 0">
+                            <div>
+                                <span class="text-gray-400 text-xs line-through" x-text="item.lineTotal.toFixed(2) + ' ₪'"></span>
+                                <span class="font-bold text-sale"
+                                    x-text="(item.lineTotal * (1 - discount / $store.cart.subtotal)).toFixed(2) + ' ₪'"></span>
+                            </div>
+                        </template>
+                        <template x-if="discount <= 0">
+                            <span class="font-bold text-primary" x-text="item.lineTotal.toFixed(2) + ' ₪'"></span>
+                        </template>
+                    </div>
 
-                    <button class="text-sale hover:text-red-700 cursor-pointer" @click="$store.confirm.show('هل أنت متأكد من حذف هذا المنتج من السلة؟', () => $store.cart.remove(item.id))">
+                    <button @click="$store.confirm.show('هل أنت متأكد من حذف هذا المنتج من السلة؟', () => $store.cart.remove(item.id))"
+                            class="cursor-pointer text-sale hover:text-red-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                     </button>
                 </div>

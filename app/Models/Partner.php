@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Partner extends Model
 {
+    use SoftDeletes;
     protected $fillable = [
         'company_name', 'contact_name', 'email', 'phone',
         'website', 'message', 'logo', 'status',

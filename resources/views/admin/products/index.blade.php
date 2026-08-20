@@ -41,11 +41,15 @@
                     </div>
                 </td>
                 <td class="p-4 font-medium text-primary">{{ $product->name }}</td>
-                <td class="p-4 text-gray-500">{{ $product->category->name }}</td>
+                <td class="p-4 text-gray-500">
+                    @foreach ($product->categories as $category)
+                        <span class="text-xs bg-yellow-50 text-yellow-600 px-2 py-1 rounded">{{ $category->name }}</span>
+                    @endforeach
+                </td>
                 <td class="p-4">{{ number_format($product->price, 2) }} ₪</td>
                 <td class="p-4">
                     @if($product->variants_count > 0)
-                        <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">{{ $product->variants_count }} خيار</span>
+                        <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">{{ $product->variants_count }} خيارات</span>
                     @else
                         {{ $product->stock }}
                     @endif

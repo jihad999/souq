@@ -15,7 +15,7 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')
+        $products = Product::with('categories')
             ->withCount('variants')
             ->latest()
             ->paginate(15);
@@ -103,7 +103,7 @@ class ProductController extends Controller
 
     public function trashed()
     {
-        $products = Product::onlyTrashed()->with('category')->latest('deleted_at')->paginate(15);
+        $products = Product::onlyTrashed()->with('categories')->latest('deleted_at')->paginate(15);
 
         return view('admin.products.trashed', compact('products'));
     }
